@@ -1,0 +1,186 @@
+﻿@page "/room/{id:int}"
+@using System.Text.Json
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+
+@if (room != null)
+{
+    <div class="container py-5 text-white" style="background: linear-gradient(to bottom, #4b0082, #2c006f); min-height: 100vh;">
+        <h1>Hello @username</h1>
+        <div class="bg-white text-dark p-5 rounded-4 shadow-lg">
+            <h1 class="display-5 fw-bold text-center text-purple mb-4" style="color: #5e0f89;">@room.Title</h1>
+            <p class="fs-5 text-center mb-3">@room.Description</p>
+
+            <div class="d-flex justify-content-center mb-4 flex-wrap gap-3">
+                <span class="badge bg-dark text-warning fs-6 px-4 py-2 rounded-pill">
+                    👥 Peserta: <strong>@participantCount</strong>
+                </span>
+                <span class="badge bg-warning text-dark fs-6 px-4 py-2 rounded-pill">
+                    👨‍🏫 Guru: <strong>@room.TeacherUsername</strong>
+                </span>
+                <span class="badge bg-light text-dark fs-6 px-4 py-2 rounded-pill border border-dark">
+                    📚 Total Pertanyaan: <strong>@questionCount</strong>
+                </span>
+            </div>
+
+            <div class="d-flex justify-content-center mt-5">
+                <button class="btn start-quiz-btn px-5 py-3 fs-5 fw-bold">
+                    🚀 Mulai Quiz
+                </button>
+                <button @onclick="() => LeaveRoom(id, username)" class="btn start-quiz-btn px-5 py-3 fs-5 fw-bold">
+                    Leave Room
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    .start-quiz-btn {
+    background-color: #6a0dad;
+    color: white;
+    border: 3px solid white;
+    border-radius: 2rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 20px rgba(106, 13, 173, 0.4);
+    }
+
+    .start-quiz-btn:hover {
+    background-color: #5e0f89;
+    transform: scale(1.05);
+    box-shadow: 0 10px 24px rgba(106, 13, 173, 0.6);
+    }
+</style>
+
+@code {
+    [Parameter]
+    public int id { get; set; }
+
+    private RoomDetail? room;
+    private int questionCount = 0;
+    private int participantCount = 0;
+    private HubConnection? hubConnection;
+    private string username = "";
+    private bool isInitialized = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        InitializeSignalRAsync();
+        try
+        {
+            isInitialized = true;
+
+            username = await JSRuntime.InvokeAsync<string>("localStorageHelper.getUsername");
+
+            if (string.IsNullOrEmpty(username))
+            {
+                Console.WriteLine("Username not found in localStorage.");
+                return;
+            }
+
+            await LoadRoomDataAsync();
+            await InitializeSignalRAsync();
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[OnAfterRenderAsync ERROR] {ex}");
+        }
+    }
+
+
+
+    private async Task LoadRoomDataAsync()
+    {
+        var json = @"
+        {
+            ""$id"": ""1"",
+            ""id"": 1,
+            ""code"": ""A4DA8F"",
+            ""title"": ""Math Quiz Room"",
+            ""description"": ""This is a room for the Math quiz for students."",
+            ""createdAt"": ""2025-04-27T14:40:11.983574"",
+            ""teacherId"": 1,
+            ""teacher"": {
+                ""$id"": ""2"",
+                ""id"": 1,
+                ""username"": ""dimas"",
+                ""role"": ""Teacher""
+            },
+            ""startTime"": ""0001-01-01T00:00:00"",
+            ""endTime"": ""0001-01-01T00:00:00"",
+            ""questions"": {
+                ""$id"": ""3"",
+                ""$values"": [
+                    {
+                        ""$id"": ""4"",
+                        ""id"": 3,
+                        ""roomId"": 1,
+                        ""room"": {
+                            ""$ref"": ""1""
+                        },
+                        ""text"": ""Which planet is known as the Red Planet?"",
+                        ""correctChoiceId"": 8
+                    }
+                ]
+            }
+        }";
+
+        var doc = JsonDocument.Parse(json);
+        var root = doc.RootElement;
+
+        room = new RoomDetail
+            {
+                Title = root.GetProperty("title").GetString(),
+                Description = root.GetProperty("description").GetString(),
+                TeacherUsername = root.GetProperty("teacher").GetProperty("username").GetString()
+            };
+
+        questionCount = root.GetProperty("questions").GetProperty("$values").GetArrayLength();
+    }
+
+    private async Task InitializeSignalRAsync()
+    {
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl("http://localhost:5121/roomHub")
+            .WithAutomaticReconnect()
+            .Build();
+
+        hubConnection.On<int>("RoomUserCountUpdated", (count) =>
+        {
+            Console.WriteLine($"[SignalR] Received count: {count}");
+            participantCount = count;
+
+            Console.WriteLine($"[Component State] participantCount set to: {participantCount}");
+            InvokeAsync(StateHasChanged);
+        });
+
+
+
+        hubConnection.On<string>("UserLeft", (user) =>
+        {
+            participantCount--;
+            StateHasChanged();
+        });
+
+        await hubConnection.StartAsync();
+        await hubConnection.InvokeAsync("JoinRoom", id, username);
+    }
+
+    private async Task LeaveRoom(int roomId, string username)
+    {
+        if (hubConnection != null)
+        {
+            await hubConnection.InvokeAsync("LeaveRoom", roomId, username);
+            Navigation.NavigateTo("/");
+        }
+    }
+
+    private class RoomDetail
+    {
+        public string? Title { get; set; }
+        public string? Description { get; set; }
+        public string? TeacherUsername { get; set; }
+    }
+}
+
