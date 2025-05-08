@@ -1,4 +1,6 @@
 ﻿@inherits LayoutComponentBase
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
 
 <div class="page" style="background: linear-gradient(to bottom, #4b0082, #2c006f); min-height: 100vh">
     <main>
@@ -14,3 +16,17 @@
     <a href="" class="reload">Reload</a>
     <a class="dismiss">🗙</a>
 </div>
+
+@* @code { *@
+@*     private string? username; *@
+
+@*     protected override async Task OnInitializedAsync() *@
+@*     { *@
+@*         username = await JS.InvokeAsync<string>("localStorage.getItem", "username"); *@
+
+@*         if (string.IsNullOrEmpty(username)) *@
+@*         { *@
+@*             Navigation.NavigateTo("/login", true);  *@
+@*         } *@
+@*     } *@
+@* } *@

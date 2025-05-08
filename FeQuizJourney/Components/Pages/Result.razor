@@ -1,0 +1,126 @@
+﻿@page "/result"
+@inject NavigationManager Navigation
+
+<div class="container py-5 text-white" style="background: linear-gradient(to bottom, #4b0082, #2c006f); min-height: 100vh;">
+    <div class="bg-white text-dark p-5 rounded-4 shadow-lg">
+        <h1 class="text-center fw-bold mb-4" style="color: #5e0f89;">Hasil Kuis</h1>
+
+        <div class="text-center mb-5">
+            <h2 class="display-4 fw-bold">Skor Anda</h2>
+            <div class="score-box mx-auto mt-3">
+                @score / @totalQuestions
+            </div>
+        </div>
+
+        <div class="question-summary">
+            @foreach (var item in questionResults)
+            {
+                <div class="result-card mb-4">
+                    <h5 class="fw-bold">@item.QuestionText</h5>
+                    <div>
+                        Jawaban Anda:
+                        <span class="@((item.IsCorrect ? "text-success" : "text-danger"))">
+                            @item.UserAnswer
+                        </span>
+                    </div>
+                    @if (!item.IsCorrect)
+                    {
+                        <div>Jawaban Benar: <strong>@item.CorrectAnswer</strong></div>
+                    }
+                </div>
+            }
+        </div>
+
+        <div class="text-center mt-4">
+            <button class="btn btn-lg return-home-btn px-4 py-2" @onclick="toHome">
+                Kembali ke Beranda
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .score-box {
+        background-color: #6a0dad;
+        color: white;
+        font-size: 4rem;
+        padding: 1rem 2rem;
+        border-radius: 2rem;
+        box-shadow: 0 8px 20px rgba(106, 13, 173, 0.4);
+    }
+
+    .result-card {
+        background-color: #f8f9fa;
+        border-left: 5px solid #6a0dad;
+        padding: 1rem;
+        border-radius: 1rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .return-home-btn {
+        background-color: #6a0dad;
+        color: white;
+        border-radius: 2rem;
+        font-weight: bold;
+        transition: all 0.3s ease;
+    }
+
+        .return-home-btn:hover {
+            background-color: #5e0f89;
+            transform: scale(1.05);
+        }
+</style>
+
+@code {
+    private int score = 3;
+    private int totalQuestions = 5;
+
+    // Simulasi data, nanti ganti dengan actual data dari state atau navigation
+    private string username = "User123";
+    private int id = 1;
+
+    private HubConnection? hubConnection;
+
+    private async Task toHome()
+    {
+        if (hubConnection != null)
+        {
+            await hubConnection.InvokeAsync("LeaveRoom", id, username);
+        }
+
+        Navigation.NavigateTo("/");
+    }
+
+    private List<QuestionResult> questionResults = new()
+    {
+        new QuestionResult
+        {
+            QuestionText = "Which planet is known as the Red Planet?",
+            UserAnswer = "Mars",
+            CorrectAnswer = "Mars",
+            IsCorrect = true
+        },
+        new QuestionResult
+        {
+            QuestionText = "Which planet is the closest to the Sun?",
+            UserAnswer = "Venus",
+            CorrectAnswer = "Mercury",
+            IsCorrect = false
+        },
+        new QuestionResult
+        {
+            QuestionText = "Which is the largest planet?",
+            UserAnswer = "Jupiter",
+            CorrectAnswer = "Jupiter",
+            IsCorrect = true
+        }
+    };
+
+    public class QuestionResult
+    {
+        public string QuestionText { get; set; } = "";
+        public string UserAnswer { get; set; } = "";
+        public string CorrectAnswer { get; set; } = "";
+        public bool IsCorrect { get; set; }
+    }
+}

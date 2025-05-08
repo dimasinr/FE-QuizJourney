@@ -2,8 +2,15 @@
 @using System.Text.Json
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
+@inject RoomServices RoomService
+
+@using FeQuizJourney.Components.Models;
 
 <h1 class="display-4 text-center text-white mb-4">Quiz Journey</h1>
+
+<div class="d-flex justify-content-end">
+    <button @onclick=LogoutAsync class="btn btn-outline-secondary">Logout</button>
+</div>
 
 @if (!string.IsNullOrEmpty(username))
 {
@@ -19,9 +26,8 @@
                     <div class="card-body">
                         <h5 class="card-title text-warning">@room.Title</h5>
                         <p class="card-text text-white">@room.Description</p>
-                        <p class="card-text text-muted"><small>👨‍🏫 Guru: @room.Teacher.Name</small></p>
+                        <p class="card-text text-muted"><small>👨‍🏫 Guru: Mr. @room.Teacher.Username</small></p>
                         <button class="btn btn-primary" @onclick="() => JoinRoom(room.RoomId)">Join Room</button>
-                        <button class="btn btn-primary" @onclick="JoinRooms">Joins Room</button>
                     </div>
                 </div>
             </div>
@@ -30,12 +36,22 @@
 </div>
 
 @code {
-    private List<Room> rooms = new();
     private HubConnection? hubConnection;
     private string? username;
     private bool hasInitialized = false;
 
+    private ApiResponsePagination? roomData;
+    private List<Room> rooms => roomData?.Data ?? new List<Room>();
+
+    private async Task GetRoomsAsync()
+    {
+        roomData = await RoomService.GetRoomsAsync();
+        StateHasChanged();
+        Console.WriteLine(roomData);
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
+
     {
         if (firstRender && !hasInitialized)
         {
@@ -43,57 +59,14 @@
 
             username = await JS.InvokeAsync<string>("localStorage.getItem", "username");
 
+            await GetRoomsAsync();
+
             if (string.IsNullOrEmpty(username))
             {
                 Navigation.NavigateTo("/login");
                 return;
             }
-
-            // Load dummy room data
-            var json = @"{
-                ""$id"": ""1"",
-                ""$values"": [
-                    {
-                        ""$id"": ""2"",
-                        ""roomId"": 1,
-                        ""title"": ""Math Quiz Room"",
-                        ""description"": ""This is a room for the Math quiz for students."",
-                        ""teacher"": {
-                            ""$id"": ""3"",
-                            ""id"": 1,
-                            ""name"": ""dimas""
-                        }
-                    }
-                ]
-            }";
-
-            var doc = JsonDocument.Parse(json);
-            var values = doc.RootElement.GetProperty("$values");
-
-            foreach (var roomEl in values.EnumerateArray())
-            {
-                var room = new Room
-                    {
-                        RoomId = roomEl.GetProperty("roomId").GetInt32(),
-                        Title = roomEl.GetProperty("title").GetString(),
-                        Description = roomEl.GetProperty("description").GetString(),
-                        Teacher = new Teacher
-                        {
-                            Id = roomEl.GetProperty("teacher").GetProperty("id").GetInt32(),
-                            Name = roomEl.GetProperty("teacher").GetProperty("name").GetString()
-                        }
-                    };
-
-                rooms.Add(room);
-            }
-
-            StateHasChanged();
         }
-    }
-
-    private void JoinRooms()
-    {
-        Console.WriteLine("JoinRooms button clicked.");
     }
 
     private async Task JoinRoom(int roomId)
@@ -140,17 +113,18 @@
         }
     }
 
-    public class Room
+    private async Task LogoutAsync()
     {
-        public int RoomId { get; set; }
-        public string Title { get; set; }
-        public string Description { get; set; }
-        public Teacher Teacher { get; set; } = new();
-    }
+        await JS.InvokeVoidAsync("localStorage.removeItem", "username");
 
-    public class Teacher
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
+        if (hubConnection is not null)
+        {
+            await hubConnection.StopAsync();
+            await hubConnection.DisposeAsync();
+            hubConnection = null;
+        }
+
+        Navigation.NavigateTo("/login", forceLoad: true);
     }
+   
 }

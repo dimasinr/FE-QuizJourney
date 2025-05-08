@@ -7,7 +7,10 @@ builder.Services.AddHttpClient("ApiClient", client =>
 {
     client.BaseAddress = new Uri("http://localhost:5121");
 });
+
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<RoomServices>();
+builder.Services.AddScoped<QuestionServices>();
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents(); 
