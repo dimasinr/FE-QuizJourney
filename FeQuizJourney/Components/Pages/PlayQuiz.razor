@@ -7,158 +7,233 @@
 
 <style>
     .start-quiz-btn {
-        background-color: #817887;
-        color: white;
-        border: 3px solid white;
-        border-radius: 2rem;
-        transition: all 0.3s ease;
-        box-shadow: 0 8px 20px rgba(106, 13, 173, 0.4);
+    background-color: #817887;
+    color: white;
+    border: 3px solid white;
+    border-radius: 2rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 20px rgba(106, 13, 173, 0.4);
     }
 
-        .start-quiz-btn:hover {
-            background-color: #5d5563;
-            transform: scale(1.05);
-            color: ghostwhite box-shadow: 0 10px 24px rgba(106, 13, 173, 0.6);
-        }
+    .start-quiz-btn:hover {
+    background-color: #5d5563;
+    transform: scale(1.05);
+    color: ghostwhite box-shadow: 0 10px 24px rgba(106, 13, 173, 0.6);
+    }
 
     .lock-quiz-btn {
-        background-color: #6a0dad;
-        color: white;
-        border: 3px solid white;
-        border-radius: 2rem;
-        transition: all 0.3s ease;
-        box-shadow: 0 8px 20px rgba(106, 13, 173, 0.4);
+    background-color: #6a0dad;
+    color: white;
+    border: 3px solid white;
+    border-radius: 2rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 20px rgba(106, 13, 173, 0.4);
     }
 
-        .lock-quiz-btn:hover {
-            background-color: #5e0f89;
-            transform: scale(1.05);
-            color: white box-shadow: 0 10px 24px rgba(106, 13, 173, 0.6);
-        }
+    .lock-quiz-btn:hover {
+    background-color: #5e0f89;
+    transform: scale(1.05);
+    color: white box-shadow: 0 10px 24px rgba(106, 13, 173, 0.6);
+    }
 
     .quit-quiz-btn {
-        background-color: #dc3545;
-        color: white;
-        border: 3px solid white;
-        border-radius: 2rem;
-        transition: all 0.3s ease;
-        box-shadow: 0 8px 20px rgba(220, 53, 69, 0.4);
+    background-color: #dc3545;
+    color: white;
+    border: 3px solid white;
+    border-radius: 2rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 20px rgba(220, 53, 69, 0.4);
     }
 
-        .quit-quiz-btn:hover {
-            background-color: #c82333;
-            transform: scale(1.05);
-            box-shadow: 0 10px 24px rgba(220, 53, 69, 0.6);
-        }
+    .quit-quiz-btn:hover {
+    background-color: #c82333;
+    transform: scale(1.05);
+    box-shadow: 0 10px 24px rgba(220, 53, 69, 0.6);
+    }
 
 
     .answer-card {
-        background-color: white;
-        border: 2px solid black;
-        font-weight: bold;
-        font-size: 2.43vw;
-        padding: 1rem 2rem;
-        text-align: center;
-        height: 12vw;
-        width: 12vw;
-        border-radius: 1rem;
-        transition: all 0.3s ease;
-        cursor: pointer;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        display: flex;
-        align-items: center;
-        justify-content: center;
+    background-color: white;
+    border: 2px solid black;
+    font-weight: bold;
+    font-size: 2.43vw;
+    padding: 1rem 2rem;
+    text-align: center;
+    height: 12vw;
+    width: 12vw;
+    border-radius: 1rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
     }
 
-        .answer-card:hover {
-            background-color: #f0f0f0;
-            transform: scale(1.05);
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
-        }
+    .answer-card:hover {
+    background-color: #f0f0f0;
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+    }
 
     .selected-answer {
-        background-color: #d1c4e9;
-        border: 3px solid #6a0dad;
-        transform: scale(1.08);
+    background-color: #d1c4e9;
+    border: 3px solid #6a0dad;
+    transform: scale(1.08);
     }
 
     .finish-quiz-btn {
-        background-color: #28a745;
-        color: white;
-        border: 3px solid white;
-        border-radius: 2rem;
-        transition: all 0.3s ease;
-        box-shadow: 0 8px 20px rgba(40, 167, 69, 0.4);
+    background-color: #28a745;
+    color: white;
+    border: 3px solid white;
+    border-radius: 2rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 20px rgba(40, 167, 69, 0.4);
     }
 
-        .finish-quiz-btn:hover {
-            background-color: #218838;
-            transform: scale(1.05);
-            box-shadow: 0 10px 24px rgba(40, 167, 69, 0.6);
-        }
+    .finish-quiz-btn:hover {
+    background-color: #218838;
+    transform: scale(1.05);
+    box-shadow: 0 10px 24px rgba(40, 167, 69, 0.6);
+    }
+
+    .previously-selected-answer {
+    background-color: #dcd0f0; 
+    border: 3px dashed #6a0dad;
+    opacity: 0.9;
+    }
+
+
 
 </style>
 
-<div class="container py-5 text-white" style="background: linear-gradient(to bottom, #4b0082, #2c006f); min-height: 100vh;">
-    <h1>Hello @username</h1>
-    <div class="bg-white text-dark p-5 rounded-4 shadow-lg">
-        <div class="d-flex justify-content-end mt-3">
+<div class="container">
+    <div class="py-5 text-white" style="background: linear-gradient(to bottom, #4b0082, #2c006f); min-height: 100vh;">
+        <div class="d-flex justify-content-between m-2">
+            <h1>Hello @username</h1>
             <button class="btn quit-quiz-btn px-3 py-1.5 fs-5 fw-bold" @onclick="() => LeaveRoom(username)">
                 Quit
             </button>
         </div>
+        <div class="d-flex">
+            @* <div class="bg-white text-dark p-2 rounded-4 shadow-lg  m-1" style="max-height: max-content;"> *@
+            @*     <div class="mt-3"> *@
+            @*         <h3>Participant Player</h3> *@
+            @*         <hr /> *@
+            @*         <ul> *@
+            @*             <li>Fey</li> *@
+            @*             <li>Ricky</li> *@
+            @*         </ul> *@
+            @*     </div> *@
+            @* </div> *@
+            <div class="bg-white text-dark p-5 rounded-4 shadow-lg m-1" style="min-width:max-content;">
+                <h1 class="display-5 fw-bold text-center text-purple mb-4" style="color: #5e0f89;">Astronom Quiz</h1>
 
-        <h1 class="display-5 fw-bold text-center text-purple mb-4" style="color: #5e0f89;">Astronom Quiz</h1>
-
-        <div class="d-flex justify-content-center mb-4 flex-wrap gap-3">
-            @if (currentQuestion != null)
-            {
-                <h2>@currentQuestion.Text</h2>
-            }
-        </div>
-
-        @if (currentQuestion?.Choices != null)
-        {
-            <div class="d-flex justify-content-center mb-4 flex-wrap gap-3">
-                @foreach (var choice in currentQuestion.Choices)
-                {
-                    var cardClass = "answer-card";
-                    if (selectedChoiceId == choice.Id)
+                <div class="d-flex justify-content-center mb-4 flex-wrap gap-3">
+                    @if (currentQuestion != null)
                     {
-                        cardClass += " selected-answer";
+                        <h2>@currentQuestion.Text</h2>
                     }
+                </div>
 
-                    <div class="@cardClass" @onclick="() => SelectAnswer(choice.Id)">
-                        @choice.Text
+                @if (currentQuestion?.Choices != null)
+                {
+                    <div class="d-flex justify-content-center mb-4 flex-wrap gap-3">
+                        @foreach (var choice in currentQuestion.Choices)
+                        {
+                            var isSelected = selectedChoiceId == choice.Id;
+                            var isPreviouslySelected = currentQuestion.SelectedChoice?.Id == choice.Id;
+                            var isAnswered = currentQuestion.SelectedChoice != null;
+
+                            var cardClass = "answer-card";
+                            if (isSelected)
+                            {
+                                cardClass += " selected-answer";
+                            }
+                            else if (isPreviouslySelected)
+                            {
+                                cardClass += " previously-selected-answer";
+                            }
+
+                            <div class="@cardClass"
+                            style="@(isAnswered ? "pointer-events: none; opacity: 0.6;" : "")"
+                            @onclick="() => SelectAnswer(choice.Id)">
+                                @choice.Text
+                            </div>
+                        }
                     </div>
                 }
-            </div>
-        }
 
-        <div class="d-flex justify-content-center mt-5 gap-3">
-            <button class="btn px-5 py-3 fs-5 fw-bold @(IsFirstQuestion ? "start-quiz-btn" : "lock-quiz-btn")"
+                <div class="d-flex justify-content-center mt-5 gap-3">
+                    <button class="btn px-5 py-3 fs-5 fw-bold @(IsFirstQuestion ? "start-quiz-btn" : "lock-quiz-btn")"
                     @onclick="PreviousQuestion" disabled="@IsFirstQuestion">
-                Sebelumnya
-            </button>
+                        Sebelumnya
+                    </button>
 
-            
-            @if (IsLastQuestion)
-            {
-                <button class="btn finish-quiz-btn px-5 py-3 fs-5 fw-bold" @onclick="FinishQuiz">
-                    Selesai
-                </button>
-            }
-            else
-            {
-                <button class="btn px-5 py-3 fs-5 fw-bold start-quiz-btn"
+
+                    @if (IsLastQuestion)
+                    {
+                        <button class="btn finish-quiz-btn px-5 py-3 fs-5 fw-bold" @onclick="NextQuestion">
+                            Selesai
+                        </button>
+                    }
+                    else
+                    {
+                        <button class="btn px-5 py-3 fs-5 fw-bold start-quiz-btn"
                         @onclick="NextQuestion">
-                    Selanjutnya
-                </button>
-            }
-        </div>
+                            Selanjutnya
+                        </button>
+                    }
+                </div>
 
+            </div>
+            <div class="bg-white text-dark p-3 rounded-4 shadow-lg m-1" style="max-height: max-content;">
+                <h3>
+                    Ranking Quiz Participant <p class="text-danger">Data count: @userScores.Count</p>
+                </h3>
+                <hr />
+                <ol type="1" class="list-unstyled">
+                    @{
+                        int i = 0;
+                    }
+                    @foreach (var score in userScores)
+                    {
+                        var rank = i + 1;
+                        var emoji = rank switch
+                        {
+                            1 => "🥇",
+                            2 => "🥈",
+                            3 => "🥉",
+                            _ => "🎖️"
+                        };
+                        var emojiSize = rank switch
+                        {
+                            1 => "fs-3",
+                            2 => "fs-5", 
+                            _ => "fs-6"  
+                        };
+
+                        <li class="mb-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="@emojiSize">@emoji</span>
+                                    <span class="fw-semibold">@score.Username.ToUpper()</span>
+                                </div>
+                                @(i == 0
+                                 ? (MarkupString)$"<h4 class='mb-0'>{score.Score} pt</h4>"
+                                 : (MarkupString)$"<h5 class='mb-0'>{score.Score} pt</h5>")
+                            </div>
+                        </li>
+                        i++;
+                    }
+                </ol>
+            </div>
+
+        </div>
     </div>
+
 </div>
+
 
 @code {
     [Parameter]
@@ -170,7 +245,7 @@
     private bool isInitialized = false;
     private HubConnection? hubConnection;
 
-
+    private List<UserScoreResponse> userScores = new();
     private List<QuestionResponse> questions = new();
     private int currentQuestionIndex = 0;
     private QuestionResponse? currentQuestion =>
@@ -181,33 +256,22 @@
     private bool IsFirstQuestion => currentQuestionIndex <= 0;
     private bool IsLastQuestion => currentQuestionIndex >= questions.Count - 1;
 
-    private int? selectedChoiceId;
+    private int selectedChoiceId;
 
     private void SelectAnswer(int choiceId)
     {
         selectedChoiceId = choiceId;
-    }
-
-    private void FinishQuiz()
-    {
-        Console.WriteLine("Quiz selesai!");
-        Navigation.NavigateTo("/result");
+        Console.WriteLine(selectedChoiceId);
     }
 
     protected override async Task OnInitializedAsync()
     {
+        InitializeSignalRAsync();
         try
         {
             isInitialized = true;
 
             username = await JSRuntime.InvokeAsync<string>("localStorageHelper.getUsername");
-
-            hubConnection = new HubConnectionBuilder()
-                .WithUrl("http://localhost:5121/roomHub")
-                .WithAutomaticReconnect()
-                .Build();
-
-            await hubConnection.StartAsync();
 
             if (string.IsNullOrEmpty(username))
             {
@@ -219,7 +283,10 @@
             if (result != null)
             {
                 questions = result;
+                selectedChoiceId = questions[0].SelectedChoice?.Id ?? 0;
             }
+
+            await InitializeSignalRAsync();
 
             StateHasChanged();
         }
@@ -227,6 +294,27 @@
         {
             Console.WriteLine($"[OnInitializedAsync ERROR] {ex}");
         }
+    }
+
+    private async Task InitializeSignalRAsync()
+    {
+        hubConnection = new HubConnectionBuilder()
+                .WithUrl("http://localhost:5121/roomHub")
+                .WithAutomaticReconnect()
+                .Build();
+        Console.WriteLine("hahaha");
+        hubConnection.On<List<UserScoreResponse>>("ReceiveRanking", (scores) =>
+        {
+            Console.WriteLine(">>> Received from hub: " + scores.Count);
+            userScores = scores.OrderByDescending(s => s.Score).ToList();
+            InvokeAsync(StateHasChanged);
+        });
+
+        await hubConnection.StartAsync();
+        Console.WriteLine("SignalR connection started");
+
+        await hubConnection.InvokeAsync("JoinRoom", id, username);
+        Console.WriteLine($"JoinRoom invoked with roomId={id}, username={username}");
     }
 
     private async Task LeaveRoom(string username)
@@ -238,16 +326,45 @@
         }
     }
 
-    private void NextQuestion()
+    private async Task NextQuestion()
     {
+        if (currentQuestion == null)
+            return;
+
+        if (currentQuestion.SelectedChoice == null && selectedChoiceId != 0)
+        {
+            var result = await QuestionService.SubmitAnswerAsync(currentQuestion.Id, selectedChoiceId, 20);
+            if (result == null) return;
+
+            if (hubConnection != null)
+            {
+                Console.WriteLine("current question id : " + currentQuestion.Id + " Selected id : " + selectedChoiceId +" Room ID : "+currentQuestion.RoomId);
+                await hubConnection.InvokeAsync("SubmitAnswer", id, currentQuestion.Id, username);
+                StateHasChanged();
+            }
+        }
+
         if (currentQuestionIndex < questions.Count - 1)
+        {
             currentQuestionIndex++;
+
+            selectedChoiceId = currentQuestion?.SelectedChoice?.Id ?? 0;
+        }
+        else
+        {
+            Navigation.NavigateTo($"room/{id}/{quizId}/result");
+        }
     }
+
 
     private void PreviousQuestion()
     {
         if (currentQuestionIndex > 0)
+        {
             currentQuestionIndex--;
+            selectedChoiceId = currentQuestion?.SelectedChoice?.Id ?? 0;
+        }
+
     }
 
 

@@ -109,8 +109,6 @@
             InvokeAsync(StateHasChanged);
         });
 
-
-
         hubConnection.On<string>("UserLeft", (user) =>
         {
             participantCount--;

@@ -1,5 +1,7 @@
+using Syncfusion.Blazor;
 using FeQuizJourney.Components;
 using FeQuizJourney.Components.Services;
+using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +13,12 @@ builder.Services.AddHttpClient("ApiClient", client =>
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<RoomServices>();
 builder.Services.AddScoped<QuestionServices>();
+//builder.Services.AddBlazorBootstrap();
+builder.Services.AddSyncfusionBlazor();
+builder.Services.AddMudServices();
+
+Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("Ngo9BigBOggjHTQxAR8/V1NNaF1cWWhMYVF0WmFZfVtgcV9GYVZURGYuP1ZhSXxWdkBiXH9bcHVQRmJdUUN9XUs=");
+
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents(); 
