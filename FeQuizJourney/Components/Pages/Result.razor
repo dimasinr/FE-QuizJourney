@@ -1,10 +1,42 @@
-﻿@page "/room/{id:int}/{quizId:int}/result"
+﻿@page "/room/{Id:int}/{QuizId:int}/result"
 @inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
-@using FeQuizJourney.Components.Models
-@using MudBlazor
 @inject QuestionServices QuestionService
-@using Syncfusion.Blazor.Charts
+@using FeQuizJourney.Components.Models
+
+
+<style>
+    .score-box {
+    background-color: #6a0dad;
+    color: white;
+    font-size: 4rem;
+    padding: 1rem 2rem;
+    border-radius: 2rem;
+    box-shadow: 0 8px 20px rgba(106, 13, 173, 0.4);
+    }
+
+    .result-card {
+    background-color: #f8f9fa;
+    border-left: 5px solid #6a0dad;
+    padding: 1rem;
+    border-radius: 1rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .return-home-btn {
+    background-color: #6a0dad;
+    color: white;
+    border-radius: 2rem;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    }
+
+    .return-home-btn:hover {
+    background-color: #5e0f89;
+    transform: scale(1.05);
+    }
+</style>
+
 
 <div class="container py-5 text-white" style="background: linear-gradient(to bottom, #4b0082, #2c006f); min-height: 100vh;">
     <div class="bg-white text-dark p-5 rounded-4 shadow-lg">
@@ -24,11 +56,11 @@
                     <h5 class="fw-bold">@item.Text</h5>
                     <div>
                         Jawaban Anda:
-                        <span class="@((item.SelectedChoice.IsCorrect ? "text-success" : "text-danger"))">
-                            @item.SelectedChoice.Text
+                        <span class="@(item.SelectedChoice != null && item.SelectedChoice.IsCorrect ? "text-success" : "text-danger")">
+                            @(item.SelectedChoice?.Text ?? "Tidak ada jawaban")
                         </span>
                     </div>
-                    @if (!item.SelectedChoice.IsCorrect)
+                    @if (item.SelectedChoice == null || !item.SelectedChoice.IsCorrect)
                     {
                         <div>
                             Jawaban Benar:
@@ -40,192 +72,131 @@
                 </div>
             }
         </div>
-
-        @if (scoreResult != null && scoreResult.Any())
-        {
-            <div class="d-flex bar-container">
-                @foreach (var item in scoreResult)
-                {
-                    <div class="bar-wrapper">
-                        <div class="bar" style="height:@(item.Score * 0.5)px;"></div>
-                        <div class="label">@item.Username</div>
-                        <div class="value">@item.Score</div>
-                    </div>
-                }
-            </div>
-        }
-        else
-        {
-            <p>Memuat data skor...</p>
-        }
+        <BarChart Height="500" Style="width: 100%" @ref="barChart" />
 
         <div class="text-center mt-4">
-            <button class="btn btn-lg return-home-btn px-4 py-2" @onclick="toHome">
+            <button class="btn btn-lg return-home-btn px-4 py-2" @onclick="ToHome">
                 Kembali ke Beranda
             </button>
         </div>
     </div>
 </div>
 
-<style>
-    .score-box {
-        background-color: #6a0dad;
-        color: white;
-        font-size: 4rem;
-        padding: 1rem 2rem;
-        border-radius: 2rem;
-        box-shadow: 0 8px 20px rgba(106, 13, 173, 0.4);
-    }
-
-    .result-card {
-        background-color: #f8f9fa;
-        border-left: 5px solid #6a0dad;
-        padding: 1rem;
-        border-radius: 1rem;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    }
-
-    .return-home-btn {
-        background-color: #6a0dad;
-        color: white;
-        border-radius: 2rem;
-        font-weight: bold;
-        transition: all 0.3s ease;
-    }
-
-        .return-home-btn:hover {
-            background-color: #5e0f89;
-            transform: scale(1.05);
-        }
-
-    .bar-container {
-        display: flex;
-        align-items: flex-end;
-        gap: 1rem;
-        height: 350px; 
-        max-width: 100%;
-        border-left: 5px solid #6a0dad;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        border-bottom: 2px solid #333;
-        padding: 1rem;
-        box-sizing: border-box;
-        border-radius: 25px;
-        background: linear-gradient(to left, #7406c480, #ffffff);
-    }
-
-    .bar-wrapper {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        flex: 1 1 0;
-        max-width: 80px;
-    }
-
-    .bar {
-        width: 100%;
-        border-radius: 10px 10px 0 0;
-        background-color: #a62cff;
-        transition: background-color 0.3s ease;
-        border-top: 3px solid #dbaaff;
-        border-left: 3px solid #dbaaff;
-        border-right: 2px solid #dbaaff;
-    }
-
-    .label {
-        margin-top: 8px;
-        font-weight: bold;
-        text-align: center;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .value {
-        font-size: 0.9rem;
-        color: #555;
-    }
-</style>
-
 @code {
     [Parameter]
-    public int id { get; set; }
+    public int Id { get; set; }
+
     [Parameter]
-    public int quizId { get; set; }
+    public int QuizId { get; set; }
 
-    private string username = "";
-    private bool isInitialized = false;
-
+    private string username = string.Empty;
     private int score = 0;
-
-    private HubConnection? hubConnection;
     private List<QuestionResponse> questions = new();
-    private List<UserScoreResponse>? scoreResult;
+    private List<UserScoreResponse>? userScores;
 
-    public class ScoreData
-    {
-        public string Name { get; set; }
-        public int Score { get; set; }
-        public string Color { get; set; }
-    }
-
-    List<ScoreData> data = new List<ScoreData>
-    {
-        new ScoreData { Name = "Rossi", Score = 7, Color = "#03a9f4" },       // Blue
-        new ScoreData { Name = "Doohan", Score = 5, Color = "#4caf50" },      // Green
-        new ScoreData { Name = "Lorenzo", Score = 3, Color = "#9e9e9e" },     // Gray
-        new ScoreData { Name = "Marquez", Score = 6, Color = "#ffc107" },     // Amber
-        new ScoreData { Name = "Stoner", Score = 2, Color = "#f44336" }       // Red
-    };
-
-    private async Task toHome()
-    {
-        if (hubConnection != null)
-        {
-            await hubConnection.InvokeAsync("LeaveRoom", id, username);
-        }
-
-        Navigation.NavigateTo("/");
-    }
-
+    private BarChart barChart = default!;
+    private BarChartOptions barChartOptions = default!;
+    private ChartData chartData = default!;
 
     protected override async Task OnInitializedAsync()
     {
+        await LoadDataAsync();
+    }
+
+    protected override void OnInitialized()
+    {
+        if (barChart is null || userScores == null || userScores.Count == 0) return;
+
+        var labels = userScores.Select(s => s.Username.ToUpper()).ToList();
+        var data = userScores.Select(s => (double?)s.Score).ToList();
+        var colors = userScores.Select((s, index) =>
+            ColorUtility.CategoricalTwelveColors[index % ColorUtility.CategoricalTwelveColors.Length]).ToList();
+
+        var datasets = new List<IChartDataset>
+    {
+        new BarChartDataset
+        {
+            Label = "Skor",
+            Data = data,
+            BackgroundColor = colors,
+            BorderWidth = Enumerable.Repeat(0.0, userScores.Count).ToList()
+        }
+    };
+
+        chartData = new ChartData
+            {
+                Labels = labels,
+                Datasets = datasets
+            };
+    }
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && barChart is not null)
+        {
+            await LoadDataAsync();
+            OnInitialized();
+            await barChart.InitializeAsync(chartData, barChartOptions);
+        }
+    }
+
+
+    private async Task UpdateChartAsync()
+    {
+        if (barChart is null || userScores.Count == 0) return;
+
+        var labels = userScores.Select(s => s.Username.ToUpper()).ToList();
+        var data = userScores.Select(s => (double?)s.Score).ToList();
+        var colors = userScores.Select((s, index) =>
+            ColorUtility.CategoricalTwelveColors[index % ColorUtility.CategoricalTwelveColors.Length]).ToList();
+
+        chartData = new ChartData
+            {
+                Labels = labels,
+                Datasets = new List<IChartDataset>
+        {
+            new BarChartDataset
+            {
+                Label = "Skor",
+                Data = data,
+                BackgroundColor = colors,
+                BorderWidth = Enumerable.Repeat(0.0, userScores.Count).ToList()
+            }
+        }
+            };
+
+        barChartOptions = new BarChartOptions
+            {
+                Responsive = true,
+                IndexAxis = "y"
+            };
+
+        await barChart.UpdateAsync(chartData, barChartOptions);
+    }
+
+    private async Task ToHome()
+    {
+        Navigation.NavigateTo("/");
+    }
+
+    private async Task LoadDataAsync()
+    {
         try
         {
-            isInitialized = true;
-
             username = await JSRuntime.InvokeAsync<string>("localStorageHelper.getUsername");
 
-            hubConnection = new HubConnectionBuilder()
-                .WithUrl("http://localhost:5121/roomHub")
-                .WithAutomaticReconnect()
-                .Build();
+            var result = await QuestionService.GetQuestionByIdAsync(Id);
+            questions = result ?? new List<QuestionResponse>();
+            userScores = await QuestionService.GetUserScoresByRoomIdAsync(Id);
 
-            await hubConnection.StartAsync();
-
-            if (string.IsNullOrEmpty(username))
-            {
-                Console.WriteLine("Username not found in localStorage.");
-                return;
-            }
-
-            var result = await QuestionService.GetQuestionByIdAsync(id);
-            questions = result;
-
-            var scores = await QuestionService.GetUserScoresByRoomIdAsync(id);
-
-            if (scores != null)
-            {
-                score = result?.Sum(q => q.Score) ?? 0;
-                scoreResult = scores;
-
-            }
-
-            StateHasChanged();
+            score = questions
+                .Where(q => q.SelectedChoice != null && q.SelectedChoice.IsCorrect)
+                .Sum(q => q.Score);
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[OnInitializedAsync ERROR] {ex}");
+            Console.WriteLine($"[LoadDataAsync ERROR] {ex}");
         }
     }
 }

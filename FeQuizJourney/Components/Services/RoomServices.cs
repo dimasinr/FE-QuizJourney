@@ -102,5 +102,30 @@ public class RoomServices
         return roomDetail;
     }
 
+    public async Task<RoomResponse> CreateRoomAsync(CreateRoomRequest request)
+    {
+        var token = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", "authToken");
+
+        if (string.IsNullOrEmpty(token))
+            throw new Exception("Token tidak ditemukan.");
+
+        var httpRequest = new HttpRequestMessage(HttpMethod.Post, "http://localhost:5121/api/room")
+        {
+            Content = JsonContent.Create(request)
+        };
+        httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var response = await _httpClient.SendAsync(httpRequest);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var error = await response.Content.ReadAsStringAsync();
+            throw new Exception($"Gagal membuat room: {response.StatusCode} - {error}");
+        }
+
+        var room = await response.Content.ReadFromJsonAsync<RoomResponse>();
+        return room!;
+    }
+
 }
 

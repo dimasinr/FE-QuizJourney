@@ -8,24 +8,25 @@
 
 <h1 class="display-4 text-center text-white mb-4">Quiz Journey</h1>
 
-<div class="d-flex justify-content-end">
-    <button @onclick=LogoutAsync class="btn btn-outline-secondary">Logout</button>
-</div>
-
 @if (!string.IsNullOrEmpty(username))
 {
-    <h5 class="text-white text-end me-4">Hello, @username!</h5>
+    <h5 class="text-white text-start me-4">Hello, @username!</h5>
 }
+
+<div class="d-flex justify-content-between">
+    <button @onclick=CreateRoom class="btn btn-primary">Create Room</button>
+    <button @onclick=LogoutAsync class="btn btn-secondary">Logout</button>
+</div>
 
 <div class="container mt-5">
     <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
         @foreach (var room in rooms)
         {
             <div class="col">
-                <div class="card h-100 border-0 shadow-lg bg-dark text-white rounded-4">
+                <div class="card h-100 border-0 shadow-lg text-dark rounded-4">
                     <div class="card-body">
                         <h5 class="card-title text-warning">@room.Title</h5>
-                        <p class="card-text text-white">@room.Description</p>
+                        <p class="card-text text-dark">@room.Description</p>
                         <p class="card-text text-muted"><small>👨‍🏫 Guru: Mr. @room.Teacher.Username</small></p>
                         <button class="btn btn-primary" @onclick="() => JoinRoom(room.RoomId)">Join Room</button>
                     </div>
@@ -125,6 +126,11 @@
         }
 
         Navigation.NavigateTo("/login", forceLoad: true);
+    }
+
+    private void CreateRoom()
+    {
+        Navigation.NavigateTo("/teacher/create/room/");
     }
    
 }

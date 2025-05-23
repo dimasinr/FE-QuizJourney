@@ -50,4 +50,25 @@
         public double Score { get; set; }
     }
 
+    public class CreateRoomRequest
+    {
+        public string Title { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public DateTime StartTime { get; set; } = DateTime.Now;
+        public DateTime EndTime { get; set; } = DateTime.Now.AddHours(72);
+    }
+
+    public class CreateQuestionRequest
+    {
+        public int RoomId { get; set; }
+        public string Text { get; set; } = string.Empty;
+        public List<CreateChoice> Choices { get; set; } = new();
+    }
+
+    public class CreateChoice
+    {
+        public string Text { get; set; } = string.Empty;
+        public bool IsCorrect { get; set; } = false;
+    }
+
 }

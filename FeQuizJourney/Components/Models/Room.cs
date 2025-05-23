@@ -8,6 +8,15 @@
         public Teacher Teacher { get; set; } = new();
     }
 
+    public class RoomResponse
+    {
+        public int RoomId { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string? Description { get; set; }
+        public DateTime StartTime { get; set; }
+        public DateTime EndTime { get; set; }
+    }
+
     public class RoomDetail
     {
         public string? Title { get; set; }

@@ -1,0 +1,216 @@
+﻿@page "/teacher/create/room/"
+@inject RoomServices RoomService
+@inject QuestionServices QuestionService
+@inject NavigationManager Navigation
+@using FeQuizJourney.Components.Models;
+
+<style>
+    .choice-box {
+        background-color: white; /* ubah jadi putih */
+        transition: all 0.3s ease;
+    }
+
+        .choice-box.correct {
+            background-color: #e0d4f7;
+            border-color: #9b59b6;
+        }
+
+    .text-purple {
+        color: #6f42c1;
+    }
+
+    .save-room-btn {
+        background-color: #6a0dad;
+        color: white;
+        border: 3px solid white;
+        border-radius: 2rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 20px rgba(106, 13, 173, 0.4);
+    }
+
+        .save-room-btn:hover {
+            background-color: #5e0f89;
+            transform: scale(1.05);
+            box-shadow: 0 10px 24px rgba(106, 13, 173, 0.6);
+        }
+</style>
+
+<div class="container bg-light p-4 rounded shadow">
+    <h3 class="mb-4">📝 Buat Room dan Pertanyaan</h3>
+
+    <EditForm Model="@roomModel" OnValidSubmit="HandleCreateRoom">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="p-4 mb-5 rounded shadow" style="background: #fff; border-radius: 1rem;">
+            <div class="mb-3">
+                <label>Judul Room</label>
+                <InputText class="form-control" @bind-Value="roomModel.Title" placeholder="Judul Room..." />
+            </div>
+
+            <div class="mb-3">
+                <label>Deskripsi</label>
+                <InputTextArea class="form-control" @bind-Value="roomModel.Description" placeholder="Deskripsi Room..." />
+            </div>
+
+            <div class="mb-3">
+                <label>Waktu Mulai</label>
+                <InputDate class="form-control" @bind-Value="roomModel.StartTime" />
+            </div>
+
+            <div class="mb-3">
+                <label>Waktu Selesai</label>
+                <InputDate class="form-control" @bind-Value="roomModel.EndTime" />
+            </div>
+        </div>
+
+        <hr />
+        <h3 align="center">Pertanyaan</h3>
+        @foreach (var question in questions.Select((q, i) => new { Question = q, Index = i + 1 }))
+        {
+            <div class="p-4 mt-4 mb-5 rounded shadow" style="background: #fff; border-radius: 2rem;">
+                <h4 class="fw-bold text-purple mb-3">Pertanyaan @question.Index</h4>
+
+                <div class="mb-4">
+                    <div class="px-4 py-3"
+                         style="border-radius: 1rem; min-width: 120px; border: 1px solid gray; text-align: center;">
+                        
+                        <InputText class="form-control form-control-lg w-100"
+                               @bind-Value="question.Question.Text"
+                               style="text-align: center; border:none; outline: none; box-shadow: none;"
+                               placeholder="Tulis pertanyaan..." />
+                    </div>
+                </div>
+
+                <div class="d-flex flex-wrap gap-3 justify-content-around mb-4">
+                    @foreach (var choice in question.Question.Choices.Select((c, i) => new { Choice = c, Index = i }))
+                    {
+                        <div class="choice-box px-4 py-3"
+                             @onclick="@(() => SelectOnlyOneCorrectChoice(question.Question, choice.Index))"
+                             style="border-radius: 1rem; width: 17vw; text-align: center; cursor: pointer; @GetChoiceStyle(choice.Choice.IsCorrect)">
+                            <InputText class="form-control border-0 text-center fw-semibold w-100"
+                                       @bind-Value="choice.Choice.Text"
+                                       placeholder="Jawaban..."
+                                       style="background-color: white; border: none; box-shadow:none; outline:none;" />
+                        </div>
+                    }
+                    @* <button class="btn btn-outline-secondary" type="button" @onclick="@(() => AddChoice(question.Question))"> *@
+                    @*     ➕ Tambah Pilihan *@
+                    @* </button> *@
+                </div>
+                <div class="d-flex justify-content-end">
+                    <button class="btn btn-outline-danger" type="button" @onclick="@(() => RemoveQuestion(question.Index - 1))">
+                        🗑 Hapus Pertanyaan
+                    </button>
+                </div>
+            </div>
+        }
+
+        <button class="btn btn-outline-dark mb-3" type="button" @onclick="AddQuestion">➕ Tambah Pertanyaan</button>
+
+        <div class="d-flex justify-content-end mt-4">
+            <button type="submit" class="btn save-room-btn btn-lg">Simpan</button>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+    private CreateRoomRequest roomModel = new();
+    private List<CreateQuestionRequest> questions = new();
+
+    protected override void OnInitialized()
+    {
+        questions = new List<CreateQuestionRequest>
+        {
+            new CreateQuestionRequest
+            {
+                Text = "",
+                Choices = new List<CreateChoice>
+                {
+                    new CreateChoice { Text = "", IsCorrect = false },
+                    new CreateChoice { Text = "", IsCorrect = false },
+                    new CreateChoice { Text = "", IsCorrect = false },
+                    new CreateChoice { Text = "", IsCorrect = false }
+                }
+            }
+        };
+    }
+
+    private void SelectOnlyOneCorrectChoice(CreateQuestionRequest question, int index)
+    {
+        for (int i = 0; i < question.Choices.Count; i++)
+        {
+            question.Choices[i].IsCorrect = (i == index) ? !question.Choices[i].IsCorrect : false;
+        }
+    }
+
+    private string GetChoiceStyle(bool isCorrect)
+    {
+        return isCorrect
+            ? "border: 2px solid #1fe053; background-color: #fffff;"
+            : "border: 2px solid #ccc;";
+    }
+
+    private void RemoveQuestion(int index)
+    {
+        if (index >= 0 && index < questions.Count)
+        {
+            questions.RemoveAt(index);
+        }
+    }
+
+    private void AddQuestion()
+    {
+        questions.Add(new CreateQuestionRequest
+            {
+                Text = "",
+                Choices = new List<CreateChoice>
+            {
+                new CreateChoice { Text = "", IsCorrect = false },
+                new CreateChoice { Text = "", IsCorrect = false },
+                new CreateChoice { Text = "", IsCorrect = false },
+                new CreateChoice { Text = "", IsCorrect = false }
+            }
+            });
+    }
+
+    // private void AddChoice(CreateQuestionRequest question)
+    // {
+    //     question.Choices.Add(new CreateChoice { Text = "", IsCorrect = false });
+    // }
+
+    private async Task HandleCreateRoom()
+    {
+        try
+        {
+            if (questions.Count == 0)
+            {
+                Console.WriteLine("Minimal harus ada 1 pertanyaan.");
+                return;
+            }
+
+            foreach (var q in questions)
+            {
+                if (string.IsNullOrWhiteSpace(q.Text) || q.Choices.Count == 0 || !q.Choices.Any(c => c.IsCorrect))
+                {
+                    Console.WriteLine("Setiap pertanyaan harus memiliki setidaknya 1 jawaban benar.");
+                    return;
+                }
+            }
+
+            var room = await RoomService.CreateRoomAsync(roomModel);
+
+            foreach (var q in questions)
+            {
+                q.RoomId = room.RoomId;
+                await QuestionService.CreateQuestionAsync(q);
+            }
+
+            Navigation.NavigateTo($"/teacher/room/{room.RoomId}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ERROR] {ex.Message}");
+        }
+    }
+}

@@ -210,13 +210,17 @@
                                     <span class="fw-semibold">@score.Username.ToUpper()</span>
                                 </div>
                                 @(i == 0
-                                 ? (MarkupString)$"<h4 class='mb-0'>{score.Score} pt</h4>"
-                                 : (MarkupString)$"<h5 class='mb-0'>{score.Score} pt</h5>")
+                                         ? (MarkupString)$"<h4 class='mb-0'>{score.Score} pt</h4>"
+                                         : (MarkupString)$"<h5 class='mb-0'>{score.Score} pt</h5>")
                             </div>
                         </li>
                         i++;
                     }
                 </ol>
+                <BarChart @ref="barChart">
+                </BarChart>
+
+
             </div>
 
         </div>
@@ -293,10 +297,11 @@
                 .WithAutomaticReconnect()
                 .Build();
         Console.WriteLine("hahaha");
-        hubConnection.On<List<UserScoreResponse>>("ReceiveRanking", (scores) =>
+        hubConnection.On<List<UserScoreResponse>>("ReceiveRanking", async (scores) =>
         {
             Console.WriteLine(">>> Received from hub: " + scores.Count);
             userScores = scores.OrderByDescending(s => s.Score).ToList();
+            await UpdateChartAsync(); // Tambahkan ini
             InvokeAsync(StateHasChanged);
         });
 
@@ -354,7 +359,77 @@
             currentQuestionIndex--;
             selectedChoiceId = currentQuestion?.SelectedChoice?.Id ?? 0;
         }
+    }
 
+    private BarChart barChart = default!;
+    private BarChartOptions barChartOptions = default!;
+    private ChartData chartData = default!;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var labels = userScores.Select(s => s.Username.ToUpper()).ToList();
+            var data = userScores.Select(s => (double?)s.Score).ToList();
+            var colors = userScores.Select((s, index) =>
+                ColorUtility.CategoricalTwelveColors[index % ColorUtility.CategoricalTwelveColors.Length]).ToList();
+
+            var dataset = new BarChartDataset
+                {
+                    Label = "Skor",
+                    Data = data,
+                    BackgroundColor = colors,
+                    BorderWidth = Enumerable.Repeat(0.0, userScores.Count).ToList()
+                };
+
+            chartData = new ChartData
+                {
+                    Labels = labels,
+                    Datasets = new List<IChartDataset> { dataset }
+                };
+
+            barChartOptions = new BarChartOptions
+                {
+                    Responsive = true,
+                    IndexAxis = "y"
+                };
+            await barChart.InitializeAsync(chartData, barChartOptions);
+        }
+        await InitializeSignalRAsync();
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    private async Task UpdateChartAsync()
+    {
+        if (barChart is null || userScores.Count == 0) return;
+
+        var labels = userScores.Select(s => s.Username.ToUpper()).ToList();
+        var data = userScores.Select(s => (double?)s.Score).ToList();
+        var colors = userScores.Select((s, index) =>
+            ColorUtility.CategoricalTwelveColors[index % ColorUtility.CategoricalTwelveColors.Length]).ToList();
+
+        chartData = new ChartData
+            {
+                Labels = labels,
+                Datasets = new List<IChartDataset>
+        {
+            new BarChartDataset
+            {
+                Label = "Skor",
+                Data = data,
+                BackgroundColor = colors,
+                BorderWidth = Enumerable.Repeat(0.0, userScores.Count).ToList()
+            }
+        }
+            };
+
+        barChartOptions = new BarChartOptions
+            {
+                Responsive = true,
+                IndexAxis = "y"
+            };
+
+        await barChart.UpdateAsync(chartData, barChartOptions);
     }
 
 

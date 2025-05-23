@@ -1,0 +1,204 @@
+﻿@page "/teacher/room/{id:int}"
+@using System.Text.Json
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+@using FeQuizJourney.Components.Models;
+@inject RoomServices RoomService
+
+<style>
+    body{
+    color: white;
+    }
+
+    .start-quiz-btn {
+    background-color: #6a0dad;
+    color: white;
+    border: 3px solid white;
+    border-radius: 2rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 20px rgba(106, 13, 173, 0.4);
+    }
+
+    .start-quiz-btn:hover {
+    background-color: #5e0f89;
+    transform: scale(1.05);
+    box-shadow: 0 10px 24px rgba(106, 13, 173, 0.6);
+    }
+</style>
+
+@if (room != null && participantCount > 0)
+{
+    <div class="container py-5 text-white" style="background: linear-gradient(to bottom, #4b0082, #2c006f); min-height: 100vh;">
+        <h1>Room Quiz</h1>
+        <div class="bg-white text-dark p-5 mt-3 rounded-4 shadow-lg">
+            <h1 class="display-5 fw-bold text-center text-purple mb-4" style="color: #5e0f89;">@room.Title</h1>
+            <p class="fs-5 text-center mb-3">@room.Description</p>
+
+            <div class="d-flex justify-content-center mb-4 flex-wrap gap-3">
+                <span class="badge bg-dark text-warning fs-6 px-4 py-2 rounded-pill">
+                    👥 Peserta: <strong>@participantCount</strong>
+                </span>
+                <span class="badge bg-warning text-dark fs-6 px-4 py-2 rounded-pill">
+                    👨‍🏫 Guru: <strong>@room.TeacherUsername</strong>
+                </span>
+                <span class="badge bg-light text-dark fs-6 px-4 py-2 rounded-pill border border-dark">
+                    📚 Total Pertanyaan: <strong>@room.Questions.Count</strong>
+                </span>
+            </div>
+
+            <div class="d-flex justify-content-center mt-5">
+                <button @onclick="() => StartQuiz()" class="btn start-quiz-btn px-5 py-3 fs-5 fw-bold">
+                    🚀 Mulai Quiz
+                </button>
+                <button @onclick="() => LeaveRoom(username)" class="btn start-quiz-btn px-5 py-3 fs-5 fw-bold">
+                    Leave Room
+                </button>
+            </div>
+
+            <div class="mt-4">
+                <LineChart @ref="lineChart" />
+            </div>
+
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int id { get; set; }
+
+    private LineChart lineChart = default!;
+    private RoomDetailResponse? room;
+    private int questionCount = 0;
+    private int participantCount = 0;
+    private HubConnection? hubConnection;
+    private string username = "";
+    private bool isInitialized = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        InitializeSignalRAsync();
+        try
+        {
+            isInitialized = true;
+
+            username = await JSRuntime.InvokeAsync<string>("localStorageHelper.getUsername");
+
+            if (string.IsNullOrEmpty(username))
+            {
+                Console.WriteLine("Username not found in localStorage.");
+                return;
+            }
+
+            var response = await RoomService.GetRoomsByIdAsync(id);
+            room = response;
+
+            await InitializeSignalRAsync();
+
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[OnAfterRenderAsync ERROR] {ex}");
+        }
+        if (firstRender)
+        {
+            await RenderWormAsync();
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    private async Task InitializeSignalRAsync()
+    {
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl("http://localhost:5121/roomHub")
+            .WithAutomaticReconnect()
+            .Build();
+
+        hubConnection.On<int>("RoomUserCountUpdated", (count) =>
+        {
+            Console.WriteLine($"[SignalR] Received count: {count}");
+            participantCount = count;
+
+            Console.WriteLine($"[Component State] participantCount set to: {participantCount}");
+            InvokeAsync(StateHasChanged);
+        });
+
+        hubConnection.On<string>("UserLeft", (user) =>
+        {
+            participantCount--;
+            StateHasChanged();
+        });
+
+        await hubConnection.StartAsync();
+        await hubConnection.InvokeAsync("JoinRoom", id, username);
+    }
+
+    private async Task LeaveRoom(string username)
+    {
+        if (hubConnection != null)
+        {
+            await hubConnection.InvokeAsync("LeaveRoom", id, username);
+            Navigation.NavigateTo("/");
+        }
+    }
+
+    private async Task StartQuiz()
+    {
+        Navigation.NavigateTo($"/room/{id}/2");
+    }
+
+    private async Task RenderWormAsync()
+    {
+        var data = new ChartData
+            {
+                Labels = new List<string> { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20" },
+                Datasets = new List<IChartDataset>()
+                {
+                    new LineChartDataset()
+                    {
+                        Label = "India",
+                        Data = new List<double?>{ 9, 20, 29, 33, 50, 66, 75, 86, 91, 100, 100, 26, 41, 50, 60, 65, 80, 80, 85, 95 },
+                        BackgroundColor = "rgb(88, 80, 141)",
+                        BorderColor = "rgb(88, 80, 141)",
+                        BorderWidth = 2,
+                        HoverBorderWidth = 4,
+                        //PointBackgroundColor = "rgb(88, 80, 141)",
+                        //PointBorderColor = "rgb(88, 80, 141)",
+                        //PointRadius = 0, // hide points
+                        //PointHoverRadius = 4,
+                    },
+                    new LineChartDataset()
+                    {
+                        Label = "England",
+                        Data = new List<double?>{ 1, 1, 8, 19, 24, 26, 39, 47, 56, 66, 75, 88, 95, 100, 40, 80, 75, 30, 40, 70 },
+                        BackgroundColor = "rgb(255, 166, 0)",
+                        BorderColor = "rgb(255, 166, 0)",
+                        BorderWidth = 2,
+                        HoverBorderWidth = 4,
+                        // PointBackgroundColor = "rgb(255, 166, 0)",
+                        // PointBorderColor = "rgb(255, 166, 0)",
+                        // PointRadius = 0, // hide points
+                        // PointHoverRadius = 4,
+                    }
+                }
+            };
+
+        var options = new LineChartOptions();
+
+        options.Interaction.Mode = InteractionMode.Index;
+
+        options.Plugins.Title!.Text = "Track Student Answer";
+        options.Plugins.Title.Display = true;
+        options.Plugins.Title.Font = new ChartFont { Size = 20 };
+
+        options.Responsive = true;
+
+        options.Scales.X!.Title = new ChartAxesTitle { Text = "Question", Display = true };
+        options.Scales.Y!.Title = new ChartAxesTitle { Text = "Grade", Display = true };
+
+        await lineChart.InitializeAsync(data, options);
+    }
+
+}
