@@ -3,6 +3,8 @@
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
 @inject AuthService AuthService
+@using System.IdentityModel.Tokens.Jwt;
+@using System.Security.Claims;
 
 <div class="d-flex justify-content-center align-items-center vh-100">
     <div class="card p-4" style="width: 25rem;">
@@ -44,8 +46,16 @@
 
         if (!string.IsNullOrWhiteSpace(token))
         {
+            var handler = new JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadJwtToken(token);
+
+            var roleClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role || c.Type == "role");
+            var role = roleClaim?.Value;
+
             await JS.InvokeVoidAsync("localStorage.setItem", "authToken", token);
             await JS.InvokeVoidAsync("localStorage.setItem", "username", loginModel.Username);
+            await JS.InvokeVoidAsync("localStorage.setItem", "role", role);
+
             Navigation.NavigateTo("/");
         }
         else

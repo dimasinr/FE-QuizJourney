@@ -25,7 +25,7 @@ public class RoomServices
 
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-        var response = await _httpClient.GetAsync("http://localhost:5121/api/room?page=1&pageSize=5");
+        var response = await _httpClient.GetAsync("http://localhost:5121/api/room?page=1&pageSize=20");
 
         if (!response.IsSuccessStatusCode)
         {
